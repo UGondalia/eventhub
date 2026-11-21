@@ -1,0 +1,7 @@
+# The API itself uses only the Python standard library when running locally.
+# boto3 is needed for DynamoDB / SNS. It is already included in the AWS Lambda runtime,
+# so you do NOT bundle it when deploying to Lambda.
+boto3>=1.34
+
+# Tests only: simulates DynamoDB in memory so tests need no AWS account
+moto>=5.0
