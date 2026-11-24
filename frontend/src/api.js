@@ -45,6 +45,7 @@ export const api = {
   me: () => request('/auth/me'),
 
   listEvents: (query) => request('/events', { query }),
+  adminEvents: () => request('/admin/events'),
   getEvent: (id) => request(`/events/${id}`),
   createEvent: (body) => request('/events', { method: 'POST', body }),
   updateEvent: (id, body) => request(`/events/${id}`, { method: 'PUT', body }),

@@ -148,7 +148,7 @@ function Events() {
   const [deleting, setDeleting] = useState(null)
 
   const load = useCallback(() => {
-    api.listEvents({ scope: 'all' }).then((r) => setEvents(r.events)).catch((e) => toast(e.message, 'error'))
+    api.adminEvents().then((r) => setEvents(r.events)).catch((e) => toast(e.message, 'error'))
   }, [toast])
   useEffect(load, [load])
 
@@ -219,7 +219,7 @@ function Attendees() {
   const [data, setData] = useState(null)
 
   useEffect(() => {
-    api.listEvents({ scope: 'all' }).then((r) => {
+    api.adminEvents().then((r) => {
       setEvents(r.events)
       if (r.events[0]) setEventId(r.events[0].id)
     }).catch((e) => toast(e.message, 'error'))

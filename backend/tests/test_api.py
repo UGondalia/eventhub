@@ -87,6 +87,15 @@ class ApiTests(unittest.TestCase):
         _, res = call("GET", "/events", query={"q": "marathon"})
         self.assertEqual(res["count"], 1)
 
+    def test_admin_events_route(self):
+        """Organiser list lives on /admin/events (behind the authorizer on AWS)."""
+        self.assertEqual(call("GET", "/admin/events")[0], 401)
+        self.assertEqual(call("GET", "/admin/events", token=self.user)[0], 403)
+        status, res = call("GET", "/admin/events", token=self.admin)
+        self.assertEqual(status, 200)
+        self.assertEqual(res["count"], len(call("GET", "/events", query={"scope": "all"}, token=self.admin)[1]["events"]))
+        self.assertGreater(res["count"], call("GET", "/events")[1]["count"] - 1)
+
     def test_admin_only_writes(self):
         body = {"title": "Nope", "category": "Arts", "venue": "x", "start": future(), "capacity": 5}
         self.assertEqual(call("POST", "/events", body)[0], 401)

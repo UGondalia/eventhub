@@ -291,11 +291,27 @@ def public_user(user):
 # --------------------------------------------------------------------------- #
 @route("GET", "/events")
 def list_events(ctx):
+    scope = ctx.query.get("scope") or "upcoming"
+    if scope == "all":
+        ctx.require_admin()
+    return _events_response(ctx, scope)
+
+
+@route("GET", "/admin/events")
+def admin_list_events(ctx):
+    """Organiser view of every event (past and upcoming).
+
+    A separate path because on AWS the public GET /events route has no
+    authorizer, so API Gateway passes no sign-in claims to Lambda there.
+    /admin/events sits behind the Cognito authorizer.
+    """
+    ctx.require_admin()
+    return _events_response(ctx, "all")
+
+
+def _events_response(ctx, scope):
     q = (ctx.query.get("q") or "").strip().lower()
     category = ctx.query.get("category") or ""
-    scope = ctx.query.get("scope") or "upcoming"
-    if scope in ("past", "all"):
-        ctx.require_admin() if scope == "all" else None
     cutoff = now().isoformat(timespec="seconds")
 
     events = get_store().list_events()
