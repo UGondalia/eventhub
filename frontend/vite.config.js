@@ -5,6 +5,7 @@ import react from '@vitejs/plugin-react'
 // Python server. In production (S3 + API Gateway) set VITE_API_URL instead.
 export default defineConfig({
   plugins: [react()],
+  define: { global: 'globalThis' }, // amazon-cognito-identity-js expects Node's `global`
   server: {
     port: 5173,
     proxy: {

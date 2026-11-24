@@ -17,6 +17,22 @@ handlers, so phase 2 (moving to AWS) swaps configuration, not code.
 | Reminders | "Send due reminders" button | Amazon EventBridge schedule triggers Lambda |
 | Logs | Printed in the terminal | Amazon CloudWatch |
 
+## Deploying to AWS (phase 2)
+
+Everything needed is already in the project:
+
+| File | Purpose |
+|---|---|
+| `backend/scripts/create_dynamodb_tables.py` | Creates the three DynamoDB tables |
+| `backend/scripts/build_lambda.py` | Builds `build/eventhub-lambda.zip` for both Lambda functions |
+| `backend/eventhub/handlers.py` | Handler `eventhub.handlers.lambda_handler` (API) |
+| `backend/eventhub/reminders.py` | Handler `eventhub.reminders.lambda_handler` (EventBridge schedule) |
+| `frontend/src/cognito.js` | Amazon Cognito sign-in, active when `VITE_COGNITO_*` are set |
+| `.github/workflows/deploy.yml` | CI/CD: test and build on every push, deploy on `main` |
+
+Follow the step-by-step deployment guide for the console steps, environment variables and
+GitHub secrets.
+
 ## Requirements
 
 - Python 3.10 or newer (no packages needed to run the app)
@@ -64,7 +80,7 @@ pip install -r requirements.txt     # only needed for the DynamoDB tests (moto, 
 python -m unittest discover -s tests -v
 ```
 
-30 tests: 15 API tests against the local store, and the same 15 against DynamoDB (simulated
+32 tests: 16 API tests against the local store, and the same 16 against DynamoDB (simulated
 in memory by moto). If the DynamoDB tests pass, the AWS storage code works.
 
 ## What you can do in the app

@@ -1,3 +1,5 @@
+import { enabled as cognitoEnabled, getIdToken } from './cognito'
+
 // API client. Locally requests go to /api (proxied by Vite to the Python server).
 // On AWS, build with VITE_API_URL=https://<id>.execute-api.<region>.amazonaws.com/<stage>
 const BASE = (import.meta.env.VITE_API_URL || '/api').replace(/\/$/, '')
@@ -19,7 +21,7 @@ async function request(path, { method = 'GET', body, query } = {}) {
     ? '?' + new URLSearchParams(Object.entries(query).filter(([, v]) => v)).toString()
     : ''
   const headers = { 'Content-Type': 'application/json' }
-  const token = getToken()
+  const token = cognitoEnabled ? await getIdToken() : getToken()
   if (token) headers.Authorization = `Bearer ${token}`
 
   let res

@@ -88,7 +88,9 @@ def _groups(claims):
 
 
 def current_user(event):
-    claims = ((event.get("requestContext") or {}).get("authorizer") or {}).get("claims") or {}
+    authorizer = (event.get("requestContext") or {}).get("authorizer") or {}
+    # REST API / payload v1 puts claims at authorizer.claims; HTTP API (v2) at authorizer.jwt.claims
+    claims = authorizer.get("claims") or (authorizer.get("jwt") or {}).get("claims") or {}
     if not claims and config.auth_mode() == "local":
         headers = {k.lower(): v for k, v in (event.get("headers") or {}).items()}
         header = headers.get("authorization", "")
@@ -533,8 +535,9 @@ def notifications(ctx):
 # --------------------------------------------------------------------------- #
 def lambda_handler(event, context=None):
     started = time.time()
-    method = (event.get("httpMethod") or "GET").upper()
-    path = event.get("path") or "/"
+    http = (event.get("requestContext") or {}).get("http") or {}  # HTTP API payload v2
+    method = (event.get("httpMethod") or http.get("method") or "GET").upper()
+    path = event.get("path") or event.get("rawPath") or "/"
     if path.startswith("/api/"):
         path = path[4:]
     path = path.rstrip("/") or "/"

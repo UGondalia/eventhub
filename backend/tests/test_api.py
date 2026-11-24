@@ -161,6 +161,22 @@ class ApiTests(unittest.TestCase):
         _, second = call("POST", "/admin/reminders/run", {}, self.admin)
         self.assertEqual(second["reminders_sent"], 0)  # never reminded twice
 
+    def test_api_gateway_http_api_event_and_cognito_claims(self):
+        """Payload v2 (HTTP API) with Cognito claims from the JWT authorizer, as sent on AWS."""
+        claims = {"sub": "abc123", "email": "org@example.com", "name": "Org", "cognito:groups": "[admin]"}
+        event = {
+            "version": "2.0", "rawPath": "/admin/stats", "headers": {}, "isBase64Encoded": False,
+            "requestContext": {"http": {"method": "GET"}, "authorizer": {"jwt": {"claims": claims}}},
+        }
+        self.assertEqual(lambda_handler(event, None)["statusCode"], 200)
+        claims["cognito:groups"] = "[]"  # signed in, but not in the admin group
+        self.assertEqual(lambda_handler(event, None)["statusCode"], 403)
+        # payload v1 / REST API shape with a real list
+        v1 = {"httpMethod": "GET", "path": "/auth/me",
+              "requestContext": {"authorizer": {"claims": {**claims, "cognito:groups": ["admin"]}}}}
+        result = json.loads(lambda_handler(v1, None)["body"])
+        self.assertEqual(result["user"]["role"], "admin")
+
     def test_unknown_route_and_cors(self):
         self.assertEqual(call("GET", "/nope")[0], 404)
         self.assertEqual(call("PATCH", "/events")[0], 405)

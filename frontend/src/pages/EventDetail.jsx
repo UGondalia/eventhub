@@ -21,14 +21,28 @@ export default function EventDetail() {
   const [busy, setBusy] = useState(false)
   const [confirmCancel, setConfirmCancel] = useState(false)
 
+  const userId = user?.id
   const load = useCallback(() => {
     api
       .getEvent(id)
-      .then((res) => { setEvent(res.event); setMine(res.my_registration) })
+      .then(async (res) => {
+        setEvent(res.event)
+        let registration = res.my_registration
+        if (!registration && userId) {
+          // On AWS the public event route cannot see who is asking, so ask the signed-in route.
+          try {
+            const all = await api.myRegistrations()
+            registration = all.registrations.find((r) => r.event_id === id && r.status === 'confirmed') || null
+          } catch {
+            registration = null
+          }
+        }
+        setMine(registration)
+      })
       .catch((err) => setError(err.message))
-  }, [id])
+  }, [id, userId])
 
-  useEffect(load, [load, user?.id])
+  useEffect(load, [load])
 
   const register = async () => {
     if (!user) return navigate('/signin', { state: { from: location.pathname } })
