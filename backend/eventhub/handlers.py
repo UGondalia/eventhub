@@ -29,7 +29,7 @@ logger.setLevel(logging.INFO)
 
 CATEGORIES = [
     "Technology", "Music", "Business", "Sports",
-    "Arts", "Food", "Education", "Community",
+    "Arts", "Food", "Education", "Community","Arts2"
 ]
 EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
 
